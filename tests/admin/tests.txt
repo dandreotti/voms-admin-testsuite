@@ -1,0 +1,10 @@
+*** Settings ***
+Resource   lib/vomsadminlib.txt
+
+
+*** Test Cases ***
+
+List users belonging to the default VO 
+	List users
+
+

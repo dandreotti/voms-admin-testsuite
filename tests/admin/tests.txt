@@ -4,7 +4,12 @@ Resource   lib/vomsadminlib.txt
 
 *** Test Cases ***
 
-List users belonging to the default VO 
-	List users
-
-
+Add one user as member to group
+  [Setup]  Use admin certificate
+  Add member with failure
+  Create group
+  Add member with failure
+  Create user
+  Add member
+  Add member with failure
+  [Teardown]  Unregister from VOMS

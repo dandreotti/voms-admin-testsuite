@@ -29,11 +29,21 @@ Use certificate   [Arguments]   ${cert}
   Execute and Check Success   cp ${certsDir}/${cert}.key.pem %{HOME}/.globus/userkey.pem
   Execute and Check Success   chmod 400 %{HOME}/.globus/userkey.pem
 
+Get certificate subject   [Arguments]   ${certFile}
+  File Should Exist   ${certFile}
+  ${subject}   Execute and Check Success   openssl x509 -in ${certFile} -noout -subject | sed "s#subject= ##"
+  [Return]   ${subject}
+
+Get certificate issuer   [Arguments]   ${certFile}
+  File Should Exist   ${certFile}
+  ${issuer}   Execute and Check Success   openssl x509 -in ${certFile} -noout -issuer | sed "s#issuer= ##"
+  [Return]   ${issuer}
+
 Create plain proxy
   Execute and Check Success   echo ${privateKeyPassword} | voms-proxy-init -pwstdin
 
 Use admin certificate   [Arguments]  ${adminCert}=VO_Admin  
-  Use certificate   VO_Admin
+  Use certificate   ${adminCert}
   Create plain proxy
 
 Stop using certificate
@@ -42,7 +52,40 @@ Stop using certificate
   Run  rm -f %{HOME}/.globus/usercred.p12
   Run  voms-proxy-destroy
 
+Create user  [Arguments]   ${user}=${default_user}  ${vo}=${vo1}  ${host}=${vo1_host}
+  Execute and Check Success   voms-admin --vo=${vo} --host ${host} create-user ${certsDir}/${user}.cert.pem
+
+Create group  [Arguments]   ${group}=${default_group}  ${vo}=${vo1}  ${host}=${vo1_host}
+  Execute and Check Success   voms-admin --vo=${vo} --host ${host} create-group "/"${vo}"/"${group}
+
+Add member  [Arguments]   ${user}=${default_user}  ${group}=${default_group}  ${vo}=${vo1}  ${host}=${vo1_host} 
+  ${subject}  Get certificate subject  ${certsDir}/${user}.cert.pem
+  ${issuer}   Get certificate issuer  ${certsDir}/${user}.cert.pem
+  Execute and Check Success   voms-admin --vo=${vo} --host ${host} --nousercert add-member "/"${vo}"/"${group} "${subject}" "${issuer}"
+
+Add member with failure  [Arguments]   ${user}=${default_user}  ${group}=${default_group}  ${vo}=${vo1}  ${host}=${vo1_host}
+  ${subject}  Get certificate subject  ${certsDir}/${user}.cert.pem
+  ${issuer}   Get certificate issuer  ${certsDir}/${user}.cert.pem
+  Execute and Check Failure   voms-admin --vo=${vo} --host ${host} --nousercert add-member "/"${vo}"/"${group} "${subject}" "${issuer}"
+        
+Remove member  [Arguments]   ${user}=${default_user}  ${group}=${default_group}  ${vo}=${vo1}  ${host}=${vo1_host}
+  ${subject}  Get certificate subject  ${certsDir}/${user}.cert.pem
+  ${issuer}   Get certificate issuer  ${certsDir}/${user}.cert.pem
+  Execute and Check Success   voms-admin --vo=${vo} --host ${host} --nousercert remove-member "/"${vo}"/"${group} "${subject}" "${issuer}"
+
+Delete group  [Arguments]   ${group}=${default_group}  ${vo}=${vo1}  ${host}=${vo1_host}
+  Execute and Check Success   voms-admin --vo=${vo} --host ${host} delete-group "/"${vo}"/"${group}
+
+Delete user  [Arguments]   ${user}=${default_user}  ${vo}=${vo1}  ${host}=${vo1_host}
+  ${subject}  Get certificate subject  ${certsDir}/${user}.cert.pem
+  ${issuer}   Get certificate issuer  ${certsDir}/${user}.cert.pem
+  Execute and Check Success   voms-admin --vo=${vo} --host ${host} --nousercert delete-user "${subject}" "${issuer}"
+
 List users   [Arguments]   ${vo}=${vo1}
-  Use admin certificate 
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-users
   Stop using certificate
+
+Unregister from VOMS  [Arguments]   ${user}=${default_user}  ${group}=${default_group}  ${vo}=${vo1}  ${host}=${vo1_host}
+  Remove member  ${user}  ${group}  ${vo}  ${host}
+  Delete group  ${group}  ${vo}  ${host}
+  Delete user  ${user}  ${vo}  ${host}

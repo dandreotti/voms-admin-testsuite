@@ -9,3 +9,7 @@ ${vo1_host}  vgrid02.cnaf.infn.it
 ${vo2_host}  vgrid02.cnaf.infn.it
 ${vo1_issuer}  /C=IT/O=INFN/OU=Host/L=CNAF/CN=vgrid02.cnaf.infn.it
 ${vo2_issuer}  /C=IT/O=INFN/OU=Host/L=CNAF/CN=vgrid02.cnaf.infn.it
+
+${default_user}   test5
+${default_group}   GTEST
+

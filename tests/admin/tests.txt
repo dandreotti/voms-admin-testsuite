@@ -4,12 +4,22 @@ Resource   lib/vomsadminlib.txt
 
 *** Test Cases ***
 
-Add one user as member to group
-  [Setup]  Use admin certificate
-  Add member with failure
-  Create group
-  Add member with failure
-  Create user
-  Add member
-  Add member with failure
-  [Teardown]  Unregister from VOMS
+Check that adding a non existing user in non existing group fails
+  ${output}  Add user to group and check failure  ${non_existent_user}  ${non_existent_group} 
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}  
+  Should contain  ${output}  User '${subject},${issuer}' not found in this vo
+
+Check that adding a non existing user in an existing group fails
+  ${output}  Add user to group and check failure  ${non_existent_user}  ${not_registered_group}
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  Should contain  ${output}  User '${subject},${issuer}' not found in this vo
+
+Check that adding a user to a group who is already a member of fails
+  ${output}  Add user to group and check failure  ${existent_user}  ${registered_group}
+  Should contain  ${output}  is already a member of group
+
+Check that adding an existing user to a group who is not yet a member of works
+  Add user to group  ${existent_user}  ${not_registered_group}
+  Remove user from group  ${existent_user}  ${not_registered_group}

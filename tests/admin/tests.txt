@@ -11,7 +11,7 @@ Check that adding a non existing user in non existing group fails
   Should contain  ${output}  User '${subject},${issuer}' not found in this vo
 
 Check that adding a non existing user in an existing group fails
-  ${output}  Add user to group and check failure  ${non_existent_user}  ${not_registered_group}
+  ${output}  Add user to group and check failure  ${non_existent_user}  ${non_registered_group}
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}
   Should contain  ${output}  User '${subject},${issuer}' not found in this vo
@@ -21,5 +21,24 @@ Check that adding a user to a group who is already a member of fails
   Should contain  ${output}  is already a member of group
 
 Check that adding an existing user to a group who is not yet a member of works
-  Add user to group  ${existent_user}  ${not_registered_group}
-  Remove user from group  ${existent_user}  ${not_registered_group}
+  Add user to group  ${existent_user}  ${non_registered_group}
+  [Teardown]  Remove user from group  ${existent_user}  ${non_registered_group}
+
+Check that assigning a non existing role of non existing user in non existing group fails
+  ${output}  Assign role and check failure   ${non_existent_user}  ${non_existent_group}  ${non_existent_role}
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  Should contain  ${output}  User '${subject},${issuer}' not found in database
+
+Check that assigning an existent role in a non existent group for an existent user fails
+  ${output}  Assign role and check failure   ${existent_user}  ${non_existent_group}  ${non_assigned_role}
+  Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' not found in database
+
+Check that assigning role in a group for a non existent user fails
+  ${output}  Assign role and check failure   ${non_existent_user}    ${non_registered_group}  ${non_assigned_role}
+  Should Match Regexp  ${output}  .+ User '.+${non_existent_user}.+' not found in database
+
+Check that assigning a role in a group for a user who doesn't have that role works
+  Assign role   ${existent_user}  ${registered_group}  ${non_assigned_role}
+  [Teardown]  Dismiss role  ${existent_user}  ${registered_group}  ${non_assigned_role}
+  

@@ -112,8 +112,33 @@ Add user to group and check failure  [Arguments]   ${cert}  ${group}  ${vo}=${vo
   ${subject}  Get certificate subject  ${certsDir}/${cert}.cert.pem
   ${issuer}   Get certificate issuer  ${certsDir}/${cert}.cert.pem
   ${output}   Execute and Check Failure   voms-admin --vo=${vo} --host ${host} --nousercert add-member "/"${vo}"/"${group} "${subject}" "${issuer}"
+  Stop using certificate
   [Return]   ${output}
-        
+
+Assign role and check failure   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} assign-role /${vo}/${groupName} ${roleName} ${certsDir}/${cert}.cert.pem
+  Stop using certificate
+  [Return]   ${output}
+
+Delete role   [Arguments]   ${roleName}   ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}
+  Stop using certificate
+
+Assign role   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} assign-role /${vo}/${groupName} ${roleName} ${certsDir}/${cert}.cert.pem 
+  Stop using certificate
+
+Dismiss role   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} dismiss-role /${vo}/${groupName} ${roleName} ${certsDir}/${cert}.cert.pem
+  Stop using certificate       
+ 
 List users   [Arguments]   ${vo}=${vo1}
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-users
   Stop using certificate

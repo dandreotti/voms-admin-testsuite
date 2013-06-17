@@ -122,6 +122,25 @@ Assign role and check failure   [Arguments]   ${cert}   ${groupName}   ${roleNam
   Stop using certificate
   [Return]   ${output}
 
+Set ACL for group and check failure   [Arguments]   ${cert}   ${groupName}  ${permission}  ${propagation}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/${groupName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation}
+  Stop using certificate
+  [Return]   ${output}
+
+Set ACL permission for a user in a group   [Arguments]   ${cert}  ${groupName}  ${permission}  ${propagation}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/${groupName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation} 
+  Stop using certificate
+
+Get ACL permission for a group  [Arguments]   ${groupName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} get-ACL /${vo}/${groupName}
+  Stop using certificate
+  [Return]   ${output}
+
 Delete role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}

@@ -41,4 +41,15 @@ Check that assigning role in a group for a non existent user fails
 Check that assigning a role in a group for a user who doesn't have that role works
   Assign role   ${existent_user}  ${registered_group}  ${non_assigned_role}
   [Teardown]  Dismiss role  ${existent_user}  ${registered_group}  ${non_assigned_role}
-  
+ 
+Check that setting ACL on non-existing group fails
+  ${output}  Set ACL for group and check failure   ${existent_user}  ${non_existent_group}  ALL  FALSE
+  Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' is not defined for this vo
+
+Check that trying to set each permission for an existing group/user context works
+  :FOR    ${perm}   IN   @{ACL_perms}
+  \    Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ${perm}  FALSE
+  \    ${output}  Get ACL permission for a group   ${registered_group} 
+  \    Log  ${output} 
+  \    Should Match Regexp  ${output}  .+${existent_user}.+${perm}
+  [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE

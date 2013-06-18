@@ -1,6 +1,8 @@
 *** Settings ***
 
 Library   OperatingSystem
+Library   Collections
+
 Resource   variables.txt
 
 *** Keywords ***
@@ -141,6 +143,17 @@ Get ACL permission for a group  [Arguments]   ${groupName}  ${vo}=${vo1}
   Stop using certificate
   [Return]   ${output}
 
+Get comma separated list  [Arguments]   @{params}
+  ${optionsList}  Set Variable  ${EMPTY}
+  ${first} =     Get From List   ${params}  0
+  ${optionsList} =  Catenate   ${optionsList}  ${first}
+  ${end} =  Get Length  ${params}
+  :FOR    ${index}   IN RANGE  1  ${end}
+   \   ${option} =     Get From List   ${params}  ${index}
+   \   ${optionsList} =  Catenate   SEPARATOR=,  ${optionsList}  ${option}  
+  Log Many   ${optionsList}
+  [Return]   ${optionsList}
+
 Delete role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}
@@ -159,5 +172,7 @@ Dismiss role   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
   Stop using certificate       
  
 List users   [Arguments]   ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-users
   Stop using certificate

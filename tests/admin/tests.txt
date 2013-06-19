@@ -46,7 +46,7 @@ Check that setting ACL on non-existing group fails
   ${output}  Set ACL for group and check failure   ${existent_user}  ${non_existent_group}  ALL  FALSE
   Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' is not defined for this vo
 
-Check that trying to set each permission for an existing group/user context works
+Check that trying to set each permission for a user in an existing group context works
   :FOR    ${perm}   IN   @{ACL_perms}
   \    Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ${perm}  FALSE
   \    ${output}  Get ACL permission for a group   ${registered_group} 
@@ -54,14 +54,39 @@ Check that trying to set each permission for an existing group/user context work
   \    Should Match Regexp  ${output}  .+${existent_user}.+${perm}
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
-Check settings multiple permissions for an existing group/user context works
+Check setting multiple permissions for an existing group/user context works
   ${multiple_perms}  Get comma separated list  @{ACL_perms}
   Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ${multiple_perms}  FALSE
   ${output}  Get ACL permission for a group   ${registered_group}
   Should Match Regexp  ${output}  .+${existent_user}.+${multiple_perms}
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
-Check settings an ACL entry for an unknown operation fails
-  ${output}  Set ACL for group and check failure   ${existent_user}  ${non_existent_group}  FAKE_OP  FALSE
+Check setting an ACL entry in a group context for an unknown operation fails
+  ${output}  Set ACL for group and check failure   ${existent_user}  ${registered_group}  FAKE_OP  FALSE
+  Log  ${output}
+  Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission
+
+Check setting permissions on non-existing role fails
+  ${output}  Set ACL for a role and check failure  ${existent_user}  ${non_existent_role}  ALL  FALSE
+  Log  ${output}
+  Should Contain  ${output}  Role '${non_existent_role}' is not defined for this vo
+
+Check that trying to set each permission for a valid group/role context works
+  :FOR    ${perm}   IN   @{ACL_perms}
+  \    Set ACL permission for a user in a group with role  ${existent_user}  ${registered_group}  ${non_assigned_role}  ${perm}  FALSE
+  \    ${output}  Get ACL permission for a group with role  ${registered_group}  ${non_assigned_role}
+  \    Log  ${output}
+  \    Should Match Regexp  ${output}  .+${existent_user}.+${perm}
+  [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
+
+Check setting multiple permissions for a valid group/role context works
+  ${multiple_perms}  Get comma separated list  @{ACL_perms}
+  Set ACL permission for a user in a group with role  ${existent_user}  ${registered_group}  ${non_assigned_role}  ${multiple_perms}  FALSE
+  ${output}  Get ACL permission for a group with role  ${registered_group}  ${non_assigned_role}
+  Should Match Regexp  ${output}  .+${existent_user}.+${multiple_perms}
+  [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
+
+Check setting an ACL entry in a group/role context for an unknown operation fails
+  ${output}  Set ACL for a group with role and check failure  ${existent_user}  ${registered_group}  ${non_assigned_role}  FAKE_OP  FALSE  
   Log  ${output}
   Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission

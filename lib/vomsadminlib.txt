@@ -131,17 +131,44 @@ Set ACL for group and check failure   [Arguments]   ${cert}   ${groupName}  ${pe
   Stop using certificate
   [Return]   ${output}
 
+Set ACL for a role and check failure   [Arguments]   ${cert}   ${roleName}  ${permission}  ${propagation}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/Role=${roleName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation}
+  Stop using certificate
+  [Return]   ${output}
+
+Set ACL for a group with role and check failure   [Arguments]   ${cert}  ${groupName}  ${roleName}  ${permission}  ${propagation}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/${groupName}/Role=${roleName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation}
+  Stop using certificate
+  [Return]   ${output}
+
+Set ACL permission for a user in a group with role  [Arguments]   ${cert}  ${groupName}  ${roleName}  ${permission}  ${propagation}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/${groupName}/Role=${roleName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation}
+  Stop using certificate
+
 Set ACL permission for a user in a group   [Arguments]   ${cert}  ${groupName}  ${permission}  ${propagation}  ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem
   Use admin certificate
   Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/${groupName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation} 
   Stop using certificate
 
-Get ACL permission for a group  [Arguments]   ${groupName}  ${vo}=${vo1}
+Get ACL permission for a group  [Arguments]   ${groupName}   ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} get-ACL /${vo}/${groupName}
   Stop using certificate
   [Return]   ${output}
+
+Get ACL permission for a group with role  [Arguments]   ${groupName}   ${roleName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} get-ACL /${vo}/${groupName}/Role=${roleName}
+  Stop using certificate
+  [Return]   ${output}
+
 
 Get comma separated list  [Arguments]   @{params}
   ${optionsList}  Set Variable  ${EMPTY}

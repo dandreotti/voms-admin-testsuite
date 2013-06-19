@@ -197,7 +197,29 @@ Dismiss role   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} dismiss-role /${vo}/${groupName} ${roleName} ${certsDir}/${cert}.cert.pem
   Stop using certificate       
- 
+
+Create attribute   [Arguments]   ${attributeName}  ${description}  ${unique}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} create-attribute-class ${attributeName} ${description} ${unique}
+  Stop using certificate
+
+Create attribute and check failure   [Arguments]   ${attributeName}  ${description}  ${unique}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Failure  voms-admin --vo=${vo} --host ${vo1_host} create-attribute-class ${attributeName} ${description} ${unique}
+  Stop using certificate
+  [Return]   ${output}
+
+Get attributes list   [Arguments]   ${vo}=${vo1}  
+  Use admin certificate
+  ${output}   Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} list-attribute-classes
+  Stop using certificate
+  [Return]   ${output}
+
+Delete attribute   [Arguments]   ${attributeName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-attribute-class ${attributeName}
+  Stop using certificate
+
 List users   [Arguments]   ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem
   Use admin certificate

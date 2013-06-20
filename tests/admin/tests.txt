@@ -50,7 +50,6 @@ Check that trying to set each permission for a user in an existing group context
   :FOR    ${perm}   IN   @{ACL_perms}
   \    Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ${perm}  FALSE
   \    ${output}  Get ACL permission for a group   ${registered_group} 
-  \    Log  ${output} 
   \    Should Match Regexp  ${output}  .+${existent_user}.+${perm}
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
@@ -75,7 +74,6 @@ Check that trying to set each permission for a valid group/role context works
   :FOR    ${perm}   IN   @{ACL_perms}
   \    Set ACL permission for a user in a group with role  ${existent_user}  ${registered_group}  ${non_assigned_role}  ${perm}  FALSE
   \    ${output}  Get ACL permission for a group with role  ${registered_group}  ${non_assigned_role}
-  \    Log  ${output}
   \    Should Match Regexp  ${output}  .+${existent_user}.+${perm}
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
@@ -104,3 +102,8 @@ Check creating an already existent attribute fails
   Log  ${output}
   Should Contain  ${output}  Attribute "TESTATTR" already defined in database
   [Teardown]  Delete Attribute  TESTATTR
+
+Check user credentials are shown when verbosity option is set
+  ${output}  List users  --verbose
+  Log  ${output}
+  Should Contain  ${output}  Subject:

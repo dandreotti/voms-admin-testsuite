@@ -220,8 +220,8 @@ Delete attribute   [Arguments]   ${attributeName}  ${vo}=${vo1}
   ${output}   Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-attribute-class ${attributeName}
   Stop using certificate
 
-List users   [Arguments]   ${vo}=${vo1}
-  File Should Exist   ${certsDir}/${cert}.cert.pem
+List users   [Arguments]   ${extraOptions}=${EMPTY}  ${vo}=${vo1}
   Use admin certificate
-  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-users
+  ${output}   Execute and Check Success   voms-admin ${extraOptions} --vo ${vo} --host ${vo1_host} list-users
   Stop using certificate
+  [Return]   ${output}

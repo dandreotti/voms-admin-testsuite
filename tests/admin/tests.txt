@@ -106,4 +106,5 @@ Check creating an already existent attribute fails
 Check user credentials are shown when verbosity option is set
   ${output}  List users  --verbose
   Log  ${output}
+  Should Contain  ${output}  using
   Should Contain  ${output}  Subject:

@@ -2,6 +2,13 @@
 Resource   lib/vomsadminlib.txt
 
 
+*** Keywords ***
+
+Teardown for ACL test
+  Delete group   test_group/test_subgroup
+  Delete group   test_group
+
+
 *** Test Cases ***
 
 Check that adding a non existing user in non existing group fails
@@ -86,7 +93,6 @@ Check setting multiple permissions for a valid group/role context works
 
 Check setting an ACL entry in a group/role context for an unknown operation fails
   ${output}  Set ACL for a group with role and check failure  ${existent_user}  ${registered_group}  ${non_assigned_role}  FAKE_OP  FALSE  
-  Log  ${output}
   Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission
 
 Check creating a new attribute works
@@ -99,12 +105,46 @@ Check creating a new attribute works
 Check creating an already existent attribute fails
   Create attribute   TESTATTR  TESTDESC  0
   ${output}  Create attribute and check failure  TESTATTR  TESTDESC  0
-  Log  ${output}
   Should Contain  ${output}  Attribute "TESTATTR" already defined in database
   [Teardown]  Delete Attribute  TESTATTR
 
 Check user credentials are shown when verbosity option is set
   ${output}  List users  --verbose
-  Log  ${output}
   Should Contain  ${output}  using
   Should Contain  ${output}  Subject:
+
+Check adding default ACE for non-existing group fails
+  ${output}  Set default ACL for group and check failure   ${existent_user}  ${non_existent_group}  ALL
+  Should Contain  ${output}  Group  not found in database!
+
+Check adding default ACE for a new created group works and is propagated to its child
+  Create group   test_group
+  Set default ACL for group   ${existent_user}  test_group  ALL
+  ${output}  Get default ACL permission for a group  test_group
+  ${subject}  Get named certificate subject  ${existent_user}
+  ${issuer}   Get named certificate issuer  ${existent_user}
+  Should contain  ${output}  (${subject},${issuer}): ALL
+  Create group   test_group/test_subgroup
+  ${output}  Get default ACL permission for a group  test_group/test_subgroup
+  Log  ${output}
+  [Teardown]  Teardown for ACL test
+
+Check setting default ACL for a group with different permissions works
+  Create group   test_group
+  ${subject}  Get named certificate subject  ${existent_user}
+  ${issuer}   Get named certificate issuer  ${existent_user}
+  :FOR    ${perm}   IN   @{ACL_perms}
+  \    Set default ACL for group  ${existent_user}  test_group  ${perm}
+  \    ${output}  Get default ACL permission for a group   test_group
+  \    Should contain  ${output}  (${subject},${issuer}): ${perm}
+  [Teardown]  Delete group  test_group
+
+Check setting default ACL for a group with multiple permissions at once works
+  Create group   test_group
+  ${subject}  Get named certificate subject  ${existent_user}
+  ${issuer}   Get named certificate issuer  ${existent_user}
+  ${multiple_perms}  Get comma separated list  @{ACL_perms}
+  Set default ACL for group  ${existent_user}  test_group  ${multiple_perms}
+  ${output}  Get default ACL permission for a group   test_group 
+  Should contain  ${output}  (${subject},${issuer}):${multiple_perms}
+  [Teardown]  Delete group  test_group

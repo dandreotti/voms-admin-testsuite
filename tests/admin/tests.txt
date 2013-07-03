@@ -150,14 +150,26 @@ Check setting default ACL for a group with multiple permissions at once works
   [Teardown]  Delete group  test_group
 
 Check creating a new group works
-  Create group   test_group
+  Create group   ${non_existent_group}
   ${output}  List groups
-  Should contain  ${output}  test_group
-  [Teardown]  Delete group  test_group
+  Should contain  ${output}  ${non_existent_group}
+  [Teardown]  Delete group  ${non_existent_group}
 
 Check creating a already existent group fails
-  Create group   test_group
-  ${output}  Create group and check failure  test_group
-  Should Match Regexp  ${output}  .+Group ".+test_group" already defined! 
-  [Teardown]  Delete group  test_group
+  Create group   ${non_existent_group}
+  ${output}  Create group and check failure  ${non_existent_group}
+  Should Match Regexp  ${output}  .+Group ".+${non_existent_group}" already defined! 
+  [Teardown]  Delete group  ${non_existent_group}
 
+Check creating a new role works
+  Create role   ${non_existent_role}
+  ${output}  List roles
+  Should contain  ${output}  ${non_existent_role}
+  [Teardown]  Delete role  ${non_existent_role}
+
+Check creating a already existent role fails
+  Create role  ${non_existent_role}
+  ${output}   Create role and check failure  ${non_existent_role}
+  Should contain  ${output}  Role "${non_existent_role}" already defined in database!
+  Log  ${output}
+  [Teardown]  Delete role  ${non_existent_role}

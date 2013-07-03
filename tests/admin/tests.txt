@@ -148,3 +148,16 @@ Check setting default ACL for a group with multiple permissions at once works
   ${output}  Get default ACL permission for a group   test_group 
   Should contain  ${output}  (${subject},${issuer}):${multiple_perms}
   [Teardown]  Delete group  test_group
+
+Check creating a new group works
+  Create group   test_group
+  ${output}  List groups
+  Should contain  ${output}  test_group
+  [Teardown]  Delete group  test_group
+
+Check creating a already existent group fails
+  Create group   test_group
+  ${output}  Create group and check failure  test_group
+  Should Match Regexp  ${output}  .+Group ".+test_group" already defined! 
+  [Teardown]  Delete group  test_group
+

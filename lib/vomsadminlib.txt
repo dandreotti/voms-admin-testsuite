@@ -97,6 +97,12 @@ Create role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-role ${roleName}
   Stop using certificate
 
+Create role and check failure  [Arguments]   ${roleName}   ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} create-role ${roleName}
+  Stop using certificate
+  [Return]   ${output}
+
 Delete role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}
@@ -205,11 +211,6 @@ Get comma separated list  [Arguments]   @{params}
   Log Many   ${optionsList}
   [Return]   ${optionsList}
 
-Delete role   [Arguments]   ${roleName}   ${vo}=${vo1}
-  Use admin certificate
-  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}
-  Stop using certificate
-
 Assign role   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem
   Use admin certificate
@@ -253,5 +254,11 @@ List users   [Arguments]   ${extraOptions}=${EMPTY}  ${vo}=${vo1}
 List groups   [Arguments]   ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-groups
+  Stop using certificate
+  [Return]   ${output}
+
+List roles   [Arguments]   ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-roles
   Stop using certificate
   [Return]   ${output}

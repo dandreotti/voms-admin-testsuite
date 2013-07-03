@@ -81,6 +81,12 @@ Create group   [Arguments]   ${groupName}   ${vo}=${vo1}
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-group ${groupName}
   Stop using certificate
 
+Create group and check failure  [Arguments]   ${groupName}   ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} create-group ${groupName}
+  Stop using certificate
+  [Return]   ${output}
+
 Delete group   [Arguments]   ${groupName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-group ${groupName}
@@ -241,5 +247,11 @@ Delete attribute   [Arguments]   ${attributeName}  ${vo}=${vo1}
 List users   [Arguments]   ${extraOptions}=${EMPTY}  ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success   voms-admin ${extraOptions} --vo ${vo} --host ${vo1_host} list-users
+  Stop using certificate
+  [Return]   ${output}
+
+List groups   [Arguments]   ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-groups
   Stop using certificate
   [Return]   ${output}

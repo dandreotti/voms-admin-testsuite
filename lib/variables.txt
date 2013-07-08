@@ -15,7 +15,9 @@ ${non_existent_user}   test5
 
 ${registered_group}  G1
 ${non_registered_group}  G1/G4
+
 ${non_existent_group}  GTEST
+${non_existent_subgroup}  SUBGTEST
 
 ${non_assigned_role}   R1
 ${non_existent_role}  RTEST

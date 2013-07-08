@@ -78,18 +78,18 @@ Delete user   [Arguments]  ${cert}   ${vo}=${vo1}
 
 Create group   [Arguments]   ${groupName}   ${vo}=${vo1}
   Use admin certificate
-  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-group ${groupName}
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-group /${vo}/${groupName}
   Stop using certificate
 
 Create group and check failure  [Arguments]   ${groupName}   ${vo}=${vo1}
   Use admin certificate
-  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} create-group ${groupName}
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} create-group /${vo}/${groupName}
   Stop using certificate
   [Return]   ${output}
 
 Delete group   [Arguments]   ${groupName}   ${vo}=${vo1}
   Use admin certificate
-  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-group ${groupName}
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-group /${vo}/${groupName}
   Stop using certificate
 
 Create role   [Arguments]   ${roleName}   ${vo}=${vo1}
@@ -175,6 +175,12 @@ Set ACL permission for a user in a group   [Arguments]   ${cert}  ${groupName}  
   Use admin certificate
   Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} add-ACL-entry /${vo}/${groupName} ${certsDir}/${cert}.cert.pem ${permission} ${propagation} 
   Stop using certificate
+
+Set default ACL for group using subject/issuer   [Arguments]   ${subject}  ${issuer}  ${groupName}  ${permission}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert add-default-ACL-entry /${vo}/${groupName} ${subject} ${issuer} ${permission}
+  Stop using certificate
+
 
 Set default ACL for group   [Arguments]   ${cert}  ${groupName}  ${permission}  ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem

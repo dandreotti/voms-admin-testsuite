@@ -146,7 +146,7 @@ Check creating a new group works
   Should contain  ${output}  ${non_existent_group}
   [Teardown]  Delete group  ${non_existent_group}
 
-Check creating a already existent group fails
+Check creating an already existent group fails
   Create group   ${non_existent_group}
   ${output}  Create group and check failure  ${non_existent_group}
   Should Match Regexp  ${output}  .+Group ".+${non_existent_group}" already defined! 
@@ -158,7 +158,7 @@ Check creating a new role works
   Should contain  ${output}  ${non_existent_role}
   [Teardown]  Delete role  ${non_existent_role}
 
-Check creating a already existent role fails
+Check creating an already existent role fails
   Create role  ${non_existent_role}
   ${output}   Create role and check failure  ${non_existent_role}
   Should contain  ${output}  Role "${non_existent_role}" already defined in database!
@@ -194,3 +194,23 @@ Check creating an already existent user without using a certificate fails
   ${output}  Create user without certificate and check failure  ${subject}  ${issuer}
   Should contain  ${output}  A user holding a certificate with the following subject '${subject}' already exists in this VO
   [Teardown]  Delete user without certificate  ${subject}  ${issuer}
+
+Check deleting a non existent attribute fails
+  ${output}  Delete attribute and check failure  ${test_attribute}
+  Should contain  ${output}  Attribute "${test_attribute}" not found in database 
+
+Check deleting an existent attribute works
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0  
+  Delete attribute  ${test_attribute}
+  ${output}  Get attributes list
+  Should not contain  ${output}  ${test_attribute}
+ 
+Check deleting a non existing group fails
+  ${output}  Delete group and check failure   ${non_existent_group}
+  Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' not found in database  
+
+Check deleting an existent group works
+  Create group   ${non_existent_group}
+  Delete group  ${non_existent_group}
+  ${output}  List groups
+  Should not contain  ${output}  ${non_existent_group}

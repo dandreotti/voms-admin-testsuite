@@ -22,4 +22,7 @@ ${non_existent_subgroup}  SUBGTEST
 ${non_assigned_role}   R1
 ${non_existent_role}  RTEST
 
+${test_attribute}  TESTATTR
+${test_attribute_desc}  TESTDESC
+
 @{ACL_perms}  CONTAINER_READ  CONTAINER_WRITE  MEMBERSHIP_READ  MEMBERSHIP_WRITE  ACL_READ  ACL_WRITE  ACL_DEFAULT  REQUESTS_READ  REQUESTS_WRITE  ATTRIBUTES_READ  ATTRIBUTES_WRITE

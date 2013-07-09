@@ -89,17 +89,17 @@ Check setting an ACL entry in a group/role context for an unknown operation fail
   Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission
 
 Check creating a new attribute works
-  Create attribute   TESTATTR  TESTDESC  0
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
   ${output}  Get attributes list
-  Should Match Regexp  ${output}  TESTATTR
-  Should Match Regexp  ${output}  TESTDESC
-  [Teardown]  Delete Attribute  TESTATTR 
+  Should Match Regexp  ${output}  ${test_attribute}
+  Should Match Regexp  ${output}  ${test_attribute_desc}
+  [Teardown]  Delete Attribute  ${test_attribute}
 
 Check creating an already existent attribute fails
-  Create attribute   TESTATTR  TESTDESC  0
-  ${output}  Create attribute and check failure  TESTATTR  TESTDESC  0
-  Should Contain  ${output}  Attribute "TESTATTR" already defined in database
-  [Teardown]  Delete Attribute  TESTATTR
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
+  ${output}  Create attribute and check failure  ${test_attribute}  ${test_attribute_desc}  0
+  Should Contain  ${output}  Attribute "${test_attribute}" already defined in database
+  [Teardown]  Delete Attribute  ${test_attribute}
 
 Check user credentials are shown when verbosity option is set
   ${output}  List users  --verbose

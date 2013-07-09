@@ -117,6 +117,12 @@ Delete group   [Arguments]   ${groupName}   ${vo}=${vo1}
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-group /${vo}/${groupName}
   Stop using certificate
 
+Delete group and check failure  [Arguments]   ${groupName}   ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} delete-group /${vo}/${groupName}
+  Stop using certificate
+  [Return]   ${output}
+
 Create role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-role ${roleName}
@@ -273,8 +279,14 @@ Get attributes list   [Arguments]   ${vo}=${vo1}
 
 Delete attribute   [Arguments]   ${attributeName}  ${vo}=${vo1}
   Use admin certificate
-  ${output}   Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-attribute-class ${attributeName}
+  Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-attribute-class ${attributeName}
   Stop using certificate
+
+Delete attribute and check failure   [Arguments]   ${attributeName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Failure  voms-admin --vo=${vo} --host ${vo1_host} delete-attribute-class ${attributeName}
+  Stop using certificate
+  [Return]   ${output}
 
 List users   [Arguments]   ${extraOptions}=${EMPTY}  ${vo}=${vo1}
   Use admin certificate

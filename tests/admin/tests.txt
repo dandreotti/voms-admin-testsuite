@@ -162,5 +162,35 @@ Check creating a already existent role fails
   Create role  ${non_existent_role}
   ${output}   Create role and check failure  ${non_existent_role}
   Should contain  ${output}  Role "${non_existent_role}" already defined in database!
-  Log  ${output}
   [Teardown]  Delete role  ${non_existent_role}
+
+Check creating a new user works
+  Create user   ${non_existent_user}
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  ${output}   List users
+  Should contain  ${output}  ${subject},${issuer}
+  [Teardown]  Delete user  ${non_existent_user} 
+
+Check creating an already existent user fails
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  Create user   ${non_existent_user}
+  ${output}  Create user and check failure  ${non_existent_user}
+  Should contain  ${output}  A user holding a certificate with the following subject '${subject}' already exists in this VO
+  [Teardown]  Delete user  ${non_existent_user}
+
+Check creating a new user without using a certificate works
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  Create user without certificate  ${subject}  ${issuer}
+  ${output}   List users
+  Should contain  ${output}  ${subject},${issuer}
+  [Teardown]  Delete user without certificate  ${subject}  ${issuer}
+
+Check creating an already existent user without using a certificate fails
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  Create user without certificate  ${subject}  ${issuer}
+  ${output}  Create user without certificate and check failure  ${subject}  ${issuer}
+  Should contain  ${output}  A user holding a certificate with the following subject '${subject}' already exists in this VO
+  [Teardown]  Delete user without certificate  ${subject}  ${issuer}

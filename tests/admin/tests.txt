@@ -2,13 +2,6 @@
 Resource   lib/vomsadminlib.txt
 
 
-*** Keywords ***
-
-Teardown for ACL test
-  Delete group   ${non_existent_group}/${non_existent_subgroup}
-  Delete group   ${non_existent_group}
-
-
 *** Test Cases ***
 
 Check that adding a non existing user in non existing group fails
@@ -119,35 +112,32 @@ Check adding default ACE for non-existing group fails
 
 Check adding default ACE for a new created group works and is propagated to its child
   Create group   ${non_existent_group}
+  ${subject}  Get named certificate subject  ${existent_user}
+  ${issuer}   Get named certificate issuer  ${existent_user}
   Set default ACL for group using subject/issuer   ANYONE  VOMS_CA  ${non_existent_group}  ALL
-  Set default ACL for group   ${existent_user}  ${non_existent_group}  ALL
-  ${output}  Get default ACL permission for a group  ${non_existent_group}
-  ${subject}  Get named certificate subject  ${existent_user}
-  ${issuer}   Get named certificate issuer  ${existent_user}
-  Should contain  ${output}  (${subject},${issuer}): ALL
-  Create group   ${non_existent_group}/${non_existent_subgroup}
-  ${output}  Get ACL permission for a group  ${non_existent_group}/${non_existent_subgroup}
-  Should contain  ${output}  (${subject},${issuer}): ALL
-  [Teardown]  Teardown for ACL test
-
-Check setting default ACL for a group with different permissions works
-  Create group   ${non_existent_group}
-  ${subject}  Get named certificate subject  ${existent_user}
-  ${issuer}   Get named certificate issuer  ${existent_user}
   :FOR    ${perm}   IN   @{ACL_perms}
-  \    Set default ACL for group  ${existent_user}  ${non_existent_group}  ${perm}
+  \    Set default ACL for group   ${existent_user}  ${non_existent_group}  ${perm}
   \    ${output}  Get default ACL permission for a group  ${non_existent_group}
   \    Should contain  ${output}  (${subject},${issuer}): ${perm}
+  \    Create group   ${non_existent_group}/${non_existent_subgroup}
+  \    ${output}  Get ACL permission for a group  ${non_existent_group}/${non_existent_subgroup}
+  \    Should contain  ${output}  (${subject},${issuer}): ${perm}
+  \    Delete group   ${non_existent_group}/${non_existent_subgroup}
   [Teardown]  Delete group  ${non_existent_group}
 
-Check setting default ACL for a group with multiple permissions at once works
+Check setting default ACL for a group with multiple permissions at once works and is propagated to its child 
   Create group   ${non_existent_group}
   ${subject}  Get named certificate subject  ${existent_user}
   ${issuer}   Get named certificate issuer  ${existent_user}
+  Set default ACL for group using subject/issuer   ANYONE  VOMS_CA  ${non_existent_group}  ALL
   ${multiple_perms}  Get comma separated list  @{ACL_perms}
   Set default ACL for group  ${existent_user}  ${non_existent_group}  ${multiple_perms}
   ${output}  Get default ACL permission for a group   ${non_existent_group} 
   Should contain  ${output}  (${subject},${issuer}):${multiple_perms}
+  Create group   ${non_existent_group}/${non_existent_subgroup}
+  ${output}  Get ACL permission for a group  ${non_existent_group}/${non_existent_subgroup}
+  Should contain  ${output}  (${subject},${issuer}):${multiple_perms}
+  Delete group   ${non_existent_group}/${non_existent_subgroup}
   [Teardown]  Delete group  ${non_existent_group}
 
 Check creating a new group works

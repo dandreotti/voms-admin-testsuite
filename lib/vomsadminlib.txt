@@ -70,10 +70,35 @@ Create user   [Arguments]   ${cert}  ${vo}=${vo1}
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-user ${certsDir}/${cert}.cert.pem
   Stop using certificate
 
+Create user and check failure  [Arguments]   ${cert}  ${vo}=${vo1}
+  File Should Exist   ${certsDir}/${cert}.cert.pem
+  Use admin certificate
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} create-user ${certsDir}/${cert}.cert.pem
+  Stop using certificate
+  [Return]   ${output}
+
+Create user without certificate  [Arguments]   ${subject}  ${issuer}  ${vo}=${vo1}
+  Use admin certificate
+  ${cn}  Execute and Check Success  echo ${subject}|grep -Eo CN=.*|tr = '\n'|tail -1
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert create-user ${subject} '${issuer}' ${cn} ''
+  Stop using certificate
+
+Create user without certificate and check failure  [Arguments]   ${subject}  ${issuer}  ${vo}=${vo1}
+  Use admin certificate
+  ${cn}  Execute and Check Success  echo ${subject}|grep -Eo CN=.*|tr = '\n'|tail -1
+  ${output}   Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} --nousercert create-user ${subject} '${issuer}' ${cn} ''
+  Stop using certificate
+  [Return]   ${output}
+
 Delete user   [Arguments]  ${cert}   ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem
   Use admin certificate 
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-user ${certsDir}/${cert}.cert.pem
+  Stop using certificate
+
+Delete user without certificate  [Arguments]  ${subject}  ${issuer}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert delete-user ${subject} '${issuer}'
   Stop using certificate
 
 Create group   [Arguments]   ${groupName}   ${vo}=${vo1}

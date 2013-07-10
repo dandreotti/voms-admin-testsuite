@@ -2,6 +2,13 @@
 Resource   lib/vomsadminlib.txt
 
 
+*** Keywords ***
+
+Teardown for attribute management test
+  Delete group  ${non_existent_group}
+  Delete attribute  ${test_attribute}
+
+
 *** Test Cases ***
 
 Check that adding a non existing user in non existing group fails
@@ -61,6 +68,7 @@ Check setting multiple permissions for an existing group/user context works
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
 Check setting an ACL entry in a group context for an unknown operation fails
+  [Tags]  acl
   ${output}  Set ACL for group and check failure   ${existent_user}  ${registered_group}  FAKE_OP  FALSE
   Log  ${output}
   Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission
@@ -214,3 +222,40 @@ Check deleting an existent group works
   Delete group  ${non_existent_group}
   ${output}  List groups
   Should not contain  ${output}  ${non_existent_group}
+
+Check deleting a group attribute without providing parameters fails
+  ${output}  Delete attribute for a group and check failure  "" 
+  Should contain  ${output}  Missing string argument!
+
+Check deleting a group attribute for a non existing group without providing the attribute name fails
+  ${output}  Delete attribute for a group and check failure  ${non_existent_group}
+  Should contain  ${output}  Missing string argument!
+
+Check deleting a non existing group attribute for a non existing group fails
+  ${output}  Delete attribute for a group and check failure  ${non_existent_group}  ${test_attribute} 
+  Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' does not exist in this vo.
+
+Check deleting an attribute not yet assigned to a group fails
+  Create group   ${non_existent_group}
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
+  ${output}  Delete attribute for a group and check failure  ${non_existent_group}  ${test_attribute} 
+  Should Match Regexp  ${output}  .+ Attribute named '${test_attribute}' not defined for group '.*${non_existent_group}'!
+  [Teardown]  Teardown for attribute management test
+
+Check setting attribute to a group works
+  Create group   ${non_existent_group}
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
+  Assign attribute to group  ${non_existent_group}  ${test_attribute}  ${test_attribute_desc}
+  ${output}  List attributes for a group  ${non_existent_group}
+  Should contain  ${output}  ${test_attribute}
+  [Teardown]  Teardown for attribute management test
+
+Check deleting attribute for a group works
+  Create group   ${non_existent_group}
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
+  Assign attribute to group  ${non_existent_group}  ${test_attribute}  ${test_attribute_desc}
+  Delete attribute for a group  ${non_existent_group}  ${test_attribute}
+  ${output}  List attributes for a group  ${non_existent_group}
+  Should not contain  ${output}  ${test_attribute}
+  [Teardown]  Teardown for attribute management test
+

@@ -12,48 +12,58 @@ Teardown for attribute management test
 *** Test Cases ***
 
 Check that adding a non existing user in non existing group fails
+  [Tags]  user
   ${output}  Add user to group and check failure  ${non_existent_user}  ${non_existent_group} 
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}  
   Should contain  ${output}  User '${subject},${issuer}' not found in this vo
 
 Check that adding a non existing user in an existing group fails
+  [Tags]  user
   ${output}  Add user to group and check failure  ${non_existent_user}  ${non_registered_group}
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}
   Should contain  ${output}  User '${subject},${issuer}' not found in this vo
 
 Check that adding a user to a group who is already a member of fails
+  [Tags]  user
   ${output}  Add user to group and check failure  ${existent_user}  ${registered_group}
   Should contain  ${output}  is already a member of group
 
 Check that adding an existing user to a group who is not yet a member of works
+  [Tags]  user
   Add user to group  ${existent_user}  ${non_registered_group}
   [Teardown]  Remove user from group  ${existent_user}  ${non_registered_group}
 
 Check that assigning a non existing role of non existing user in non existing group fails
+  [Tags]  role
   ${output}  Assign role and check failure   ${non_existent_user}  ${non_existent_group}  ${non_existent_role}
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}
   Should contain  ${output}  User '${subject},${issuer}' not found in database
 
 Check that assigning an existent role in a non existent group for an existent user fails
+  [Tags]  role
   ${output}  Assign role and check failure   ${existent_user}  ${non_existent_group}  ${non_assigned_role}
   Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' not found in database
 
 Check that assigning role in a group for a non existent user fails
+  [Tags]  role
   ${output}  Assign role and check failure   ${non_existent_user}    ${non_registered_group}  ${non_assigned_role}
   Should Match Regexp  ${output}  .+ User '.+${non_existent_user}.+' not found in database
 
 Check that assigning a role in a group for a user who doesn't have that role works
+  [Tags]  role
   Assign role   ${existent_user}  ${registered_group}  ${non_assigned_role}
   [Teardown]  Dismiss role  ${existent_user}  ${registered_group}  ${non_assigned_role}
  
 Check that setting ACL on non-existing group fails
+  [Tags]  acl
   ${output}  Set ACL for group and check failure   ${existent_user}  ${non_existent_group}  ALL  FALSE
   Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' is not defined for this vo
 
 Check that trying to set each permission for a user in an existing group context works
+  [Tags]  acl
   :FOR    ${perm}   IN   @{ACL_perms}
   \    Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ${perm}  FALSE
   \    ${output}  Get ACL permission for a group   ${registered_group} 
@@ -61,6 +71,7 @@ Check that trying to set each permission for a user in an existing group context
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
 Check setting multiple permissions for an existing group/user context works
+  [Tags]  acl
   ${multiple_perms}  Get comma separated list  @{ACL_perms}
   Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ${multiple_perms}  FALSE
   ${output}  Get ACL permission for a group   ${registered_group}
@@ -74,11 +85,13 @@ Check setting an ACL entry in a group context for an unknown operation fails
   Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission
 
 Check setting permissions on non-existing role fails
+  [Tags]  acl
   ${output}  Set ACL for a role and check failure  ${existent_user}  ${non_existent_role}  ALL  FALSE
   Log  ${output}
   Should Contain  ${output}  Role '${non_existent_role}' is not defined for this vo
 
 Check that trying to set each permission for a valid group/role context works
+  [Tags]  acl
   :FOR    ${perm}   IN   @{ACL_perms}
   \    Set ACL permission for a user in a group with role  ${existent_user}  ${registered_group}  ${non_assigned_role}  ${perm}  FALSE
   \    ${output}  Get ACL permission for a group with role  ${registered_group}  ${non_assigned_role}
@@ -86,6 +99,7 @@ Check that trying to set each permission for a valid group/role context works
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
 Check setting multiple permissions for a valid group/role context works
+  [Tags]  acl
   ${multiple_perms}  Get comma separated list  @{ACL_perms}
   Set ACL permission for a user in a group with role  ${existent_user}  ${registered_group}  ${non_assigned_role}  ${multiple_perms}  FALSE
   ${output}  Get ACL permission for a group with role  ${registered_group}  ${non_assigned_role}
@@ -93,10 +107,12 @@ Check setting multiple permissions for a valid group/role context works
   [Teardown]  Set ACL permission for a user in a group  ${existent_user}  ${registered_group}  ALL  FALSE
 
 Check setting an ACL entry in a group/role context for an unknown operation fails
+  [Tags]  acl
   ${output}  Set ACL for a group with role and check failure  ${existent_user}  ${registered_group}  ${non_assigned_role}  FAKE_OP  FALSE  
   Should Match Regexp  ${output}  ValueError: FAKE_OP is not a supported VOMSPermission
 
 Check creating a new attribute works
+  [Tags]  attribute
   Create attribute   ${test_attribute}  ${test_attribute_desc}  0
   ${output}  Get attributes list
   Should Match Regexp  ${output}  ${test_attribute}
@@ -104,21 +120,25 @@ Check creating a new attribute works
   [Teardown]  Delete Attribute  ${test_attribute}
 
 Check creating an already existent attribute fails
+  [Tags]  attribute
   Create attribute   ${test_attribute}  ${test_attribute_desc}  0
   ${output}  Create attribute and check failure  ${test_attribute}  ${test_attribute_desc}  0
   Should Contain  ${output}  Attribute "${test_attribute}" already defined in database
   [Teardown]  Delete Attribute  ${test_attribute}
 
 Check user credentials are shown when verbosity option is set
+  [Tags]  user
   ${output}  List users  --verbose
   Should Contain  ${output}  using
   Should Contain  ${output}  Subject:
 
 Check adding default ACE for non-existing group fails
+  [Tags]  acl
   ${output}  Set default ACL for group and check failure   ${existent_user}  ${non_existent_group}  ALL
   Should Contain  ${output}  Group  not found in database!
 
 Check adding default ACE for a new created group works and is propagated to its child
+  [Tags]  acl  group
   Create group   ${non_existent_group}
   ${subject}  Get named certificate subject  ${existent_user}
   ${issuer}   Get named certificate issuer  ${existent_user}
@@ -134,6 +154,7 @@ Check adding default ACE for a new created group works and is propagated to its 
   [Teardown]  Delete group  ${non_existent_group}
 
 Check setting default ACL for a group with multiple permissions at once works and is propagated to its child 
+  [Tags]  acl  group
   Create group   ${non_existent_group}
   ${subject}  Get named certificate subject  ${existent_user}
   ${issuer}   Get named certificate issuer  ${existent_user}
@@ -149,30 +170,35 @@ Check setting default ACL for a group with multiple permissions at once works an
   [Teardown]  Delete group  ${non_existent_group}
 
 Check creating a new group works
+  [Tags]  group
   Create group   ${non_existent_group}
   ${output}  List groups
   Should contain  ${output}  ${non_existent_group}
   [Teardown]  Delete group  ${non_existent_group}
 
 Check creating an already existent group fails
+  [Tags]  group
   Create group   ${non_existent_group}
   ${output}  Create group and check failure  ${non_existent_group}
   Should Match Regexp  ${output}  .+Group ".+${non_existent_group}" already defined! 
   [Teardown]  Delete group  ${non_existent_group}
 
 Check creating a new role works
+  [Tags]  role
   Create role   ${non_existent_role}
   ${output}  List roles
   Should contain  ${output}  ${non_existent_role}
   [Teardown]  Delete role  ${non_existent_role}
 
 Check creating an already existent role fails
+  [Tags]  role
   Create role  ${non_existent_role}
   ${output}   Create role and check failure  ${non_existent_role}
   Should contain  ${output}  Role "${non_existent_role}" already defined in database!
   [Teardown]  Delete role  ${non_existent_role}
 
 Check creating a new user works
+  [Tags]  user
   Create user   ${non_existent_user}
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}
@@ -181,6 +207,7 @@ Check creating a new user works
   [Teardown]  Delete user  ${non_existent_user} 
 
 Check creating an already existent user fails
+  [Tags]  user
   ${subject}  Get named certificate subject  ${non_existent_user}
   Create user   ${non_existent_user}
   ${output}  Create user and check failure  ${non_existent_user}
@@ -188,6 +215,7 @@ Check creating an already existent user fails
   [Teardown]  Delete user  ${non_existent_user}
 
 Check creating a new user without using a certificate works
+  [Tags]  user
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}
   Create user without certificate  ${subject}  ${issuer}
@@ -196,6 +224,7 @@ Check creating a new user without using a certificate works
   [Teardown]  Delete user without certificate  ${subject}  ${issuer}
 
 Check creating an already existent user without using a certificate fails
+  [Tags]  user
   ${subject}  Get named certificate subject  ${non_existent_user}
   ${issuer}   Get named certificate issuer  ${non_existent_user}
   Create user without certificate  ${subject}  ${issuer}
@@ -204,38 +233,46 @@ Check creating an already existent user without using a certificate fails
   [Teardown]  Delete user without certificate  ${subject}  ${issuer}
 
 Check deleting a non existent attribute fails
+  [Tags]  attribute
   ${output}  Delete attribute and check failure  ${test_attribute}
   Should contain  ${output}  Attribute "${test_attribute}" not found in database 
 
 Check deleting an existent attribute works
+  [Tags]  attribute
   Create attribute   ${test_attribute}  ${test_attribute_desc}  0  
   Delete attribute  ${test_attribute}
   ${output}  Get attributes list
   Should not contain  ${output}  ${test_attribute}
  
 Check deleting a non existing group fails
+  [Tags]  group
   ${output}  Delete group and check failure   ${non_existent_group}
   Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' not found in database  
 
 Check deleting an existent group works
+  [Tags]  group
   Create group   ${non_existent_group}
   Delete group  ${non_existent_group}
   ${output}  List groups
   Should not contain  ${output}  ${non_existent_group}
 
 Check deleting a group attribute without providing parameters fails
+  [Tags]  attribute
   ${output}  Delete attribute for a group and check failure  "" 
   Should contain  ${output}  Missing string argument!
 
 Check deleting a group attribute for a non existing group without providing the attribute name fails
+  [Tags]  attribute
   ${output}  Delete attribute for a group and check failure  ${non_existent_group}
   Should contain  ${output}  Missing string argument!
 
 Check deleting a non existing group attribute for a non existing group fails
+  [Tags]  attribute
   ${output}  Delete attribute for a group and check failure  ${non_existent_group}  ${test_attribute} 
   Should Match Regexp  ${output}  .+ Group '.*${non_existent_group}' does not exist in this vo.
 
 Check deleting an attribute not yet assigned to a group fails
+  [Tags]  attribute  group
   Create group   ${non_existent_group}
   Create attribute   ${test_attribute}  ${test_attribute_desc}  0
   ${output}  Delete attribute for a group and check failure  ${non_existent_group}  ${test_attribute} 
@@ -243,6 +280,7 @@ Check deleting an attribute not yet assigned to a group fails
   [Teardown]  Teardown for attribute management test
 
 Check setting attribute to a group works
+  [Tags]  attribute  group
   Create group   ${non_existent_group}
   Create attribute   ${test_attribute}  ${test_attribute_desc}  0
   Assign attribute to group  ${non_existent_group}  ${test_attribute}  ${test_attribute_desc}
@@ -251,6 +289,7 @@ Check setting attribute to a group works
   [Teardown]  Teardown for attribute management test
 
 Check deleting attribute for a group works
+  [Tags]  attribute  group
   Create group   ${non_existent_group}
   Create attribute   ${test_attribute}  ${test_attribute_desc}  0
   Assign attribute to group  ${non_existent_group}  ${test_attribute}  ${test_attribute_desc}

@@ -123,6 +123,11 @@ Delete group and check failure  [Arguments]   ${groupName}   ${vo}=${vo1}
   Stop using certificate
   [Return]   ${output}
 
+Assign attribute to group  [Arguments]   ${groupName}   ${attributeName}  ${attributeValue}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} set-group-attribute /${vo}/${groupName} ${attributeName} ${attributeValue}
+  Stop using certificate
+
 Create role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-role ${roleName}
@@ -288,6 +293,17 @@ Delete attribute and check failure   [Arguments]   ${attributeName}  ${vo}=${vo1
   Stop using certificate
   [Return]   ${output}
 
+Delete attribute for a group and check failure   [Arguments]   ${groupName}  ${attributeName}=${EMPTY}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Failure  voms-admin --vo=${vo} --host ${vo1_host} delete-group-attribute /${vo}/${groupName} ${attributeName}
+  Stop using certificate
+  [Return]   ${output}
+
+Delete attribute for a group   [Arguments]   ${groupName}  ${attributeName}=${EMPTY}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-group-attribute /${vo}/${groupName} ${attributeName}
+  Stop using certificate
+
 List users   [Arguments]   ${extraOptions}=${EMPTY}  ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success   voms-admin ${extraOptions} --vo ${vo} --host ${vo1_host} list-users
@@ -303,5 +319,11 @@ List groups   [Arguments]   ${vo}=${vo1}
 List roles   [Arguments]   ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-roles
+  Stop using certificate
+  [Return]   ${output}
+
+List attributes for a group   [Arguments]   ${groupName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-group-attributes /${vo}/${groupName}
   Stop using certificate
   [Return]   ${output}

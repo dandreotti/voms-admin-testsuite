@@ -101,6 +101,40 @@ Delete user without certificate  [Arguments]  ${subject}  ${issuer}  ${vo}=${vo1
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert delete-user ${subject} '${issuer}'
   Stop using certificate
 
+Delete user without certificate and check failure  [Arguments]  ${subject}  ${issuer}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} --nousercert delete-user ${subject} '${issuer}'
+  Stop using certificate
+  [Return]  ${output}
+
+Delete user attribute without certificate  [Arguments]   ${subject}  ${issuer}  ${attributeName}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert delete-user-attribute ${subject} '${issuer}' ${attributeName}
+  Stop using certificate
+
+Delete user attribute without certificate and check failure  [Arguments]   ${subject}  ${issuer}  ${attributeName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} --nousercert delete-user-attribute ${subject} '${issuer}' ${attributeName}
+  Stop using certificate
+  [Return]  ${output}
+
+Set user attribute without certificate  [Arguments]   ${subject}  ${issuer}  ${attributeName}  ${attributeValue}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert set-user-attribute ${subject} '${issuer}' ${attributeName} ${attributeValue}
+  Stop using certificate
+
+List user attributes without certificate  [Arguments]   ${subject}  ${issuer}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} --nousercert list-user-attributes ${subject} '${issuer}'
+  Stop using certificate
+  [Return]  ${output}
+
+List user roles  [Arguments]   ${subject}  ${issuer}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Success  voms-admin --vo ${vo} --host ${vo1_host} --nousercert list-user-roles ${subject} '${issuer}'
+  Stop using certificate
+  [Return]  ${output}
+
 Create group   [Arguments]   ${groupName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} create-group /${vo}/${groupName}
@@ -143,6 +177,12 @@ Delete role   [Arguments]   ${roleName}   ${vo}=${vo1}
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}
   Stop using certificate
+  
+Delete role and check failure   [Arguments]   ${roleName}   ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} delete-role ${roleName}
+  Stop using certificate
+  [Return]  ${output}
 
 Add user to group    [Arguments]   ${cert}   ${groupName}   ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem
@@ -263,7 +303,23 @@ Dismiss role   [Arguments]   ${cert}   ${groupName}   ${roleName}  ${vo}=${vo1}
   File Should Exist   ${certsDir}/${cert}.cert.pem
   Use admin certificate
   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} dismiss-role /${vo}/${groupName} ${roleName} ${certsDir}/${cert}.cert.pem
-  Stop using certificate       
+  Stop using certificate
+
+Dismiss role without certificate   [Arguments]   ${subject}  ${issuer}  ${groupName}  ${roleName}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert dismiss-role /${vo}/${groupName} ${roleName} ${subject} '${issuer}'
+  Stop using certificate
+
+Dismiss role without certificate and check failure   [Arguments]   ${subject}  ${issuer}  ${groupName}  ${roleName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Failure   voms-admin --vo ${vo} --host ${vo1_host} --nousercert dismiss-role /${vo}/${groupName} ${roleName} ${subject} '${issuer}'
+  Stop using certificate
+  [Return]  ${output}
+
+Remove member without certificate   [Arguments]   ${subject}  ${issuer}  ${groupName}  ${vo}=${vo1}
+  Use admin certificate
+  Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} --nousercert remove-member /${vo}/${groupName} ${subject} '${issuer}'
+  Stop using certificate
 
 Create attribute   [Arguments]   ${attributeName}  ${description}  ${unique}  ${vo}=${vo1}
   Use admin certificate
@@ -275,6 +331,18 @@ Create attribute and check failure   [Arguments]   ${attributeName}  ${descripti
   ${output}   Execute and Check Failure  voms-admin --vo=${vo} --host ${vo1_host} create-attribute-class ${attributeName} ${description} ${unique}
   Stop using certificate
   [Return]   ${output}
+
+Set attribute value for a role   [Arguments]   ${groupName}  ${roleName}  ${attributeName}  ${attributeValue}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} set-role-attribute /${vo}/${groupName} Role=${roleName} ${attributeName} ${attributeValue}
+  Stop using certificate
+  [Return]  ${output}
+
+Set attribute value for a role and check failure   [Arguments]   ${groupName}  ${roleName}  ${attributeName}  ${attributeValue}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo} --host ${vo1_host} set-role-attribute /${vo}/${groupName}  Role=${roleName} ${attributeName} ${attributeValue}
+  Stop using certificate
+  [Return]  ${output}
 
 Get attributes list   [Arguments]   ${vo}=${vo1}  
   Use admin certificate
@@ -304,6 +372,18 @@ Delete attribute for a group   [Arguments]   ${groupName}  ${attributeName}=${EM
   ${output}   Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-group-attribute /${vo}/${groupName} ${attributeName}
   Stop using certificate
 
+Delete attribute for a role   [Arguments]   ${groupName}  ${role}  ${attributeName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Success  voms-admin --vo=${vo} --host ${vo1_host} delete-role-attribute /${vo}/${groupName} Role=${role} ${attributeName}
+  Stop using certificate
+  [Return]   ${output}
+
+Delete attribute for a role and check failure   [Arguments]   ${groupName}  ${role}  ${attributeName}=${EMPTY}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo} --host ${vo1_host} delete-role-attribute /${vo}/${groupName} Role=${role} ${attributeName}
+  Stop using certificate
+  [Return]   ${output}
+
 List users   [Arguments]   ${extraOptions}=${EMPTY}  ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success   voms-admin ${extraOptions} --vo ${vo} --host ${vo1_host} list-users
@@ -325,5 +405,11 @@ List roles   [Arguments]   ${vo}=${vo1}
 List attributes for a group   [Arguments]   ${groupName}  ${vo}=${vo1}
   Use admin certificate
   ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-group-attributes /${vo}/${groupName}
+  Stop using certificate
+  [Return]   ${output}
+
+List role attributes for a group   [Arguments]   ${groupName}  ${roleName}  ${vo}=${vo1}
+  Use admin certificate
+  ${output}   Execute and Check Success   voms-admin --vo ${vo} --host ${vo1_host} list-role-attributes /${vo}/${groupName} Role=${roleName}
   Stop using certificate
   [Return]   ${output}

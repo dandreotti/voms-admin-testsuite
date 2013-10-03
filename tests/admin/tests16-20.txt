@@ -1,0 +1,167 @@
+*** Settings ***
+Resource   lib/vomsadminlib.txt
+
+*** Keywords ***
+
+Remove group
+  ${groups}  List groups
+  ${status}  Run Keyword And Return Status  Should contain  ${groups}  ${non_existent_group}
+  Run Keyword If  ${status}  Delete group  ${non_existent_group}
+
+Remove role
+  ${roles}  List roles
+  ${status}  Run Keyword And Return Status  Should contain  ${roles}  ${non_existent_role}
+  Run Keyword If  ${status}  Delete role  ${non_existent_role}
+
+Remove attribute
+  ${attributes}  Get attributes list
+  ${status}  Run Keyword And Return Status  Should contain  ${attributes}  ${test_attribute}
+  Run Keyword If  ${status}  Delete attribute  ${test_attribute}
+
+Remove user
+  ${users}  List users
+  ${status}  Run Keyword And Return Status  Should contain  ${users}  ${non_existent_user}
+  Run Keyword If  ${status}  Delete user  ${non_existent_user}
+
+Clear environment
+  Remove attribute
+  Remove role
+  Remove group
+  Remove user
+
+*** Test Cases ***
+
+VOMS-delRole
+  [Tags]  role
+  [Setup]  Clear environment
+  [Documentation]  *Remove Role for VO*\n\n
+  ...  *Date*: 09/11/2006\n\n
+  ...  *Revised*: March 2008\n\n
+  ...  *Author*: Victor Galaktionov *e-mail*: victor.galaktionov@cern.ch\n\n
+  ...  *Description of the test*: Delete Role for VO\n\n
+  ...  *Link*: https://github.com/italiangrid/voms-admin-legacy-testsuite/blob/master/tests/VOMS-delRole
+  ${output}  Delete role and check failure  ${non_existent_role}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchRoleException: Role
+  Create role  ${non_existent_role}
+  ${output}  List roles
+  Should contain  ${output}  ${non_existent_role}
+  Delete role  ${non_existent_role}
+  ${output}  List roles
+  Should not contain  ${output}  ${non_existent_role}
+  [Teardown]  Clear environment
+
+VOMS-delRoleAttribute
+  [Tags]  role  attribute
+  [Documentation]  *Remove Role's Attribute*\n\n
+  ...  *Date*: 15/02/2007\n\n
+  ...  *Revised*: March 2008\n\n
+  ...  *Author*: Victor Galaktionov *e-mail*: victor.galaktionov@cern.ch\n\n
+  ...  *Description of the test*: Remove Role's Attribute\n\n
+  ...  *Link*: https://github.com/italiangrid/voms-admin-legacy-testsuite/blob/master/tests/VOMS-delRoleAttribute
+  [Setup]  Clear environment
+  Use admin certificate
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo1} --host ${vo1_host} delete-role-attribute
+  Should contain  ${output}  Missing group argument!
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo1} --host ${vo1_host} delete-role-attribute /${vo1}/${non_existent_group}
+  Should contain  ${output}  Missing role argument!
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo1} --host ${vo1_host} delete-role-attribute /${vo1}/${non_existent_group} Role=${non_existent_role}
+  Should contain  ${output}  Missing string argument!
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo1} --host ${vo1_host} delete-role-attribute /${vo1}/${non_existent_group} Role=${non_existent_role} ${test_attribute}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchGroupException: Group
+  Stop using certificate
+  Create group  ${non_existent_group}
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
+  Use admin certificate
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo1} --host ${vo1_host} delete-role-attribute /${vo1}/${non_existent_group} Role=${non_existent_role} ${test_attribute}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchRoleException: Role
+  Stop using certificate
+  Create role  ${non_existent_role}
+  Use admin certificate
+  ${output}  Execute and Check Failure  voms-admin --vo=${vo1} --host ${vo1_host} delete-role-attribute /${vo1}/${non_existent_group} Role=${non_existent_role} ${test_attribute}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchAttributeException: Attribute
+  Stop using certificate
+  Set attribute value for a role  ${non_existent_group}  ${non_existent_role}  ${test_attribute}  0
+  ${output}  List role attributes for a group  ${non_existent_group}  ${non_existent_role}
+  Should contain  ${output}  ${test_attribute}
+  Delete attribute for a role  ${non_existent_group}  ${non_existent_role}  ${test_attribute}
+  ${output}  List role attributes for a group  ${non_existent_group}  ${non_existent_role}
+  Should not contain  ${output}  ${test_attribute}
+  [Teardown]  Clear environment
+
+VOMS-delUser
+  [Tags]  user
+  [Documentation]  *Remove one user using its user certificate*\n\n
+  ...  *Date*: 09/11/2006\n\n
+  ...  *Revised*: March 2008\n\n
+  ...  *Author*: Victor Galaktionov *e-mail*: victor.galaktionov@cern.ch\n\n
+  ...  *Description of the test*: Remove one user using its user certificate\n\n
+  ...  *Link*: https://github.com/italiangrid/voms-admin-legacy-testsuite/blob/master/tests/VOMS-delUser
+  [Setup]  Clear environment
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  ${output}   List users
+  Should not contain  ${output}  ${subject},${issuer}
+  ${output}  Delete user without certificate and check failure  ${subject}  ${issuer}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchUserException: User
+  Create user  ${non_existent_user}
+  ${output}   List users
+  Should contain  ${output}  ${subject},${issuer}
+  Delete user without certificate  ${subject}  ${issuer}
+  ${output}   List users
+  Should not contain  ${output}  ${subject},${issuer}
+  [Teardown]  Clear environment
+
+VOMS-delUserAttribute
+  [Tags]  user  attribute
+  [Documentation]  *Remove user's Attribute*\n\n
+  ...  *Date*: 09/02/2007\n\n
+  ...  *Revised*: March 2008\n\n
+  ...  *Author*: Victor Galaktionov *e-mail*: victor.galaktionov@cern.ch\n\n
+  ...  *Description of the test*: Remove user's Attribute\n\n
+  ...  *Link*: https://github.com/italiangrid/voms-admin-legacy-testsuite/blob/master/tests/VOMS-delUserAttribute
+  [Setup]  Clear environment
+  Create user  ${non_existent_user}
+  Create attribute   ${test_attribute}  ${test_attribute_desc}  0
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  ${output}  Delete user attribute without certificate and check failure  ${subject}  ${issuer}  ${test_attribute}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchAttributeException: Attribute
+  Set user attribute without certificate  ${subject}  ${issuer}  ${test_attribute}  0
+  ${attributes}  List user attributes without certificate  ${subject}  ${issuer}
+  Should contain  ${attributes}  ${test_attribute}
+  ${output}  Delete user attribute without certificate  ${subject}  ${issuer}  ${test_attribute}
+  ${attributes}  List user attributes without certificate  ${subject}  ${issuer}
+  Should not contain  ${attributes}  ${test_attribute}
+  [Teardown]  Clear environment
+
+VOMS-dismissRole
+  [Tags]  user  role
+  [Documentation]  *Remove user's Role*\n\n
+  ...  *Date*: 09/11/2006\n\n
+  ...  *Revised*: March 2008\n\n
+  ...  *Author*: Victor Galaktionov *e-mail*: victor.galaktionov@cern.ch\n\n
+  ...  *Description of the test*: Remove user's Role\n\n
+  ...  *Link*: https://github.com/italiangrid/voms-admin-legacy-testsuite/blob/master/tests/VOMS-dismissRole
+  [Setup]  Clear environment
+  ${subject}  Get named certificate subject  ${non_existent_user}
+  ${issuer}   Get named certificate issuer  ${non_existent_user}
+  ${output}  Dismiss role without certificate and check failure  ${subject}  ${issuer}  ${non_existent_group}  ${non_existent_role}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchUserException: User
+  Create Role  ${non_existent_role}
+  ${output}  Dismiss role without certificate and check failure  ${subject}  ${issuer}  ${non_existent_group}  ${non_existent_role}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchUserException: User
+  Create Group  ${non_existent_group}
+  ${output}  Dismiss role without certificate and check failure  ${subject}  ${issuer}  ${non_existent_group}  ${non_existent_role}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchUserException: User
+  Create User  ${non_existent_user}
+  ${output}  Dismiss role without certificate and check failure  ${subject}  ${issuer}  ${non_existent_group}  ${non_existent_role}
+  Should contain  ${output}  org.glite.security.voms.admin.persistence.error.NoSuchMappingException: User
+  Add user to group  ${non_existent_user}  ${non_existent_group}
+  Assign role  ${non_existent_user}  ${non_existent_group}  ${non_existent_role}
+  ${output}  List user roles  ${subject}  ${issuer}
+  Should contain  ${output}  ${non_existent_role}
+  Dismiss role without certificate  ${subject}  ${issuer}  ${non_existent_group}  ${non_existent_role}
+  Remove member without certificate  ${subject}  ${issuer}  ${non_existent_group}
+  ${output}  List user roles  ${subject}  ${issuer}
+  Should not contain  ${output}  ${non_existent_role}
+  [Teardown]  Clear environment
